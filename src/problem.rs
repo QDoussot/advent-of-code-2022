@@ -1,10 +1,10 @@
-use std::fmt::Debug;
 use derive_more::Display;
+use std::fmt::Debug;
 
-#[derive(Display,Debug)]
+#[derive(Display, Debug)]
 pub enum ParsingError {
-    #[display(fmt="")]
-    _IncorrectLine {
+    #[display(fmt = "")]
+    IncorrectLine {
         description: String,
         number: usize,
         line: String,
@@ -12,19 +12,19 @@ pub enum ParsingError {
     _UnverifiedConstraint(String),
 }
 
-#[derive(Display,Debug)]
+#[derive(Display, Debug)]
 pub enum SolvingError {
     _InternError,
     _ExpectationUnfulfilled(String),
 }
 
 pub trait Problem: Sized {
-    fn parse(lines: &[String]) -> Result<Self, ParsingError>;
+    fn parse(lines: Vec<String>) -> Result<Self, ParsingError>;
     fn part_one(&self) -> Result<usize, SolvingError>;
     fn part_two(&self) -> Result<usize, SolvingError>;
 }
 
-#[derive(Display,Debug)]
+#[derive(Display, Debug)]
 pub enum Error {
     CantOpenInputFile(String),
     _ParsingFailed(ParsingError),
@@ -32,10 +32,11 @@ pub enum Error {
     _SolverFailed(SolvingError),
 }
 
-pub fn _solve<T: Problem + Debug>(lines: &[String], part: usize) -> Result<usize, Error> {
+pub fn solve<T: Problem + Debug>(lines: Vec<String>, part: usize) -> Result<usize, Error> {
     let problem = T::parse(lines).map_err(Error::_ParsingFailed)?;
     if part == 0 {
         println!("{:?}", problem);
+        return Ok(0);
     }
     if part == 1 {
         problem.part_one().map_err(|_| Error::NoCorrespondingSolver)

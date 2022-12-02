@@ -1,19 +1,19 @@
-use structopt::StructOpt;
 use std::io::{self, BufRead, BufReader};
+use structopt::StructOpt;
 
+mod day1;
 mod problem;
 use problem::Error;
 
 #[derive(StructOpt)]
 struct Opt {
     day: usize,
-    _part: usize,
+    part: usize,
     #[structopt(long)]
     input: Option<String>,
     #[structopt(long, conflicts_with = "input")]
     example: bool,
 }
-
 
 fn main() -> Result<(), Error> {
     let opt = Opt::from_args();
@@ -29,17 +29,16 @@ fn main() -> Result<(), Error> {
         Some(file_name) => file_name,
     };
     let file = std::fs::File::open(file_name).map_err(|e| Error::CantOpenInputFile(e.to_string()))?;
-    let _lines = BufReader::new(file)
+    let lines = BufReader::new(file)
         .lines()
         .collect::<Result<Vec<_>, io::Error>>()
         .unwrap();
 
-    let solution :Result<String, problem::Error>= match opt.day {
-        1 => Err(Error::NoCorrespondingSolver),
+    let solution: Result<usize, problem::Error> = match opt.day {
+        1 => problem::solve::<day1::Inventories>(lines, opt.part),
         _ => Err(Error::NoCorrespondingSolver),
     };
     println!("{}", solution?);
 
     Ok(())
 }
-
