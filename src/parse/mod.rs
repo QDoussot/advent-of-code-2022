@@ -1,9 +1,20 @@
 use derive_more::Display;
 
+#[derive(Debug, Copy, Clone)]
+pub struct Context {
+    line: usize,
+    col: usize,
+}
+impl Default for Context {
+    fn default() -> Self {
+        Self { line: 1, col: 0 }
+    }
+}
+
 pub trait Parse {
     type Out;
-    fn read_byte(&mut self, byte: &u8) -> Result<(), Error>;
-    fn end(self) -> Result<Self::Out, Error>;
+    fn read_byte(&mut self, byte: &u8, context: Context) -> Result<(), Error>;
+    fn end(self, context: Context) -> Result<Self::Out, Error>;
 }
 
 #[derive(Debug, Display, PartialEq, Eq)]
@@ -27,28 +38,25 @@ impl Error {
 
 pub trait ParseExt: Parse + Default {
     fn parse(bytes: &[u8]) -> Result<Self::Out, Error> {
-        let mut parser = Self::default();
-        for b in bytes {
-            parser.read_byte(b)?;
-        }
-        parser.end()
+        Self::parse_with_context(bytes, Context::default())
     }
 
-    fn parse_with_context(mut line_number: usize, bytes: &[u8]) -> Result<(usize, Self::Out), (usize, Error)> {
+    fn parse_with_context(bytes: &[u8], mut context: Context) -> Result<Self::Out, Error> {
         let mut parser = Self::default();
         //let mut line_number = 0;
         let mut current_line = vec![];
         for b in bytes {
             if b == &0xA {
-                line_number += 1;
+                context.line += 1;
+                context.col = 0;
                 current_line.clear()
             } else {
+                context.col += 1;
                 current_line.push(*b);
             }
-            parser.read_byte(b).map_err(|e| (line_number, e))?;
+            parser.read_byte(b, context)?;
         }
-        let out = parser.end().map_err(|e| (line_number, e));
-        out.map(|out| (line_number, out))
+        parser.end(context)
     }
 }
 impl<T: Parse + Default> ParseExt for T {}

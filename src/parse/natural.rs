@@ -1,3 +1,4 @@
+use super::Context;
 use super::Error;
 use super::Parse;
 use std::{fmt::Display, marker::PhantomData, str::FromStr};
@@ -14,14 +15,14 @@ where
 {
     type Out = T;
 
-    fn read_byte(&mut self, byte: &u8) -> Result<(), Error> {
+    fn read_byte(&mut self, byte: &u8, _context: Context) -> Result<(), Error> {
         self.bytes.push(*byte);
         Ok(())
     }
 
-    fn end(self) -> Result<Self::Out, Error> {
+    fn end(self, context: Context) -> Result<Self::Out, Error> {
         let string = std::str::from_utf8(&self.bytes).map_err(|_| Error::new("utf8 shit", "", 0))?;
-        T::from_str(string).map_err(|e| Error::new(string.to_string(), e.to_string(), 0))
+        T::from_str(string).map_err(|e| Error::new(string.to_string(), e.to_string(), context.line))
     }
 }
 

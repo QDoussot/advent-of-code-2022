@@ -1,4 +1,4 @@
-use super::{Error, Parse, ParseExt};
+use super::{Context, Error, Parse, ParseExt};
 use std::{collections::VecDeque, marker::PhantomData};
 
 pub trait Separator {
@@ -30,7 +30,7 @@ impl Separator for LineSep {
 }
 #[derive(Debug)]
 pub struct Seq<T: Parse + Default, S: Separator> {
-    ln: usize,
+    previous_context: Context,
     p: PhantomData<T>,
     sep: PhantomData<S>,
     res: Vec<T::Out>,
@@ -41,7 +41,7 @@ pub struct Seq<T: Parse + Default, S: Separator> {
 impl<T: Parse + Default, S: Separator> Default for Seq<T, S> {
     fn default() -> Self {
         Self {
-            ln: 0,
+            previous_context: Default::default(),
             p: Default::default(),
             sep: Default::default(),
             res: Default::default(),
@@ -54,19 +54,17 @@ impl<T: Parse + Default, S: Separator> Default for Seq<T, S> {
 impl<T: Parse + Default, S: Separator> Parse for Seq<T, S> {
     type Out = Vec<T::Out>;
 
-    fn read_byte(&mut self, byte: &u8) -> Result<(), Error> {
+    fn read_byte(&mut self, byte: &u8, context: Context) -> Result<(), Error> {
         if self.potential.len() == S::as_bytes().len() {
             if self.potential.make_contiguous() == S::as_bytes() {
-                let (ln_end, item) = T::parse_with_context(self.ln, &self.accepted).map_err(|(lne, e)| {
-                    let mut elts = Vec::new();
-                    elts.append(&mut self.res);
-                    Error::new(e.context, e.message, lne)
-                })?;
-                self.ln = ln_end + S::as_bytes().iter().filter(|v| **v == 0xA).count();
+                let item = T::parse_with_context(&self.accepted, self.previous_context)?;
                 self.res.push(item);
                 self.potential.clear();
                 self.accepted.clear();
             } else if let Some(byte) = self.potential.pop_front() {
+                if self.accepted.is_empty() {
+                    self.previous_context = context
+                }
                 self.accepted.push(byte);
             }
         }
@@ -74,14 +72,14 @@ impl<T: Parse + Default, S: Separator> Parse for Seq<T, S> {
         Ok(())
     }
 
-    fn end(mut self) -> Result<Self::Out, Error> {
+    fn end(mut self, context: Context) -> Result<Self::Out, Error> {
         if !self.potential.is_empty() && self.potential != S::as_bytes() {
             self.accepted.extend(self.potential.to_owned())
         }
         if !self.accepted.is_empty() {
-            match T::parse(&self.accepted) {
+            match T::parse_with_context(&self.accepted, context) {
                 Ok(item) => self.res.push(item),
-                Err(e) => return Err(Error::new(e.context, e.message, self.ln)),
+                Err(err) => return Err(err),
             }
         }
         Ok(self.res)
