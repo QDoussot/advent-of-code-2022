@@ -1,34 +1,24 @@
 use itertools::Itertools;
 
+use crate::parse::natural::Natural;
+use crate::parse::seq::{EmptyLineSep, LineSep, Seq};
+use crate::parse::ParseExt;
 use crate::problem::{self, ParsingError};
 
 #[derive(Debug)]
 pub struct Inventories(Vec<Vec<usize>>);
-
+type Parser = Seq<Seq<Natural<usize>, LineSep>, EmptyLineSep>;
 impl problem::Problem for Inventories {
     fn parse(lines: Vec<String>) -> Result<Self, problem::ParsingError> {
-        let mut inventories = vec![];
-        let mut curr = vec![];
-        for (number, line) in lines.into_iter().enumerate() {
-            if line.is_empty() {
-                if !curr.is_empty() {
-                    inventories.push(curr)
-                }
-                curr = vec![];
-            } else {
-                let calories = line.parse::<usize>().map_err(|e| ParsingError::IncorrectLine {
-                    description: e.to_string(),
-                    number,
-                    line,
-                })?;
-                curr.push(calories)
+        let bytes = lines.join("\n");
+        let inventories = Parser::parse_with_context(bytes.as_bytes());
+        match inventories {
+            Ok(inv) => Ok(Self(inv)),
+            Err(e) => {
+                println!("{}", e);
+                Ok(Self(vec![]))
             }
         }
-        if !curr.is_empty() {
-            inventories.push(curr);
-        }
-
-        Ok(Self(inventories))
     }
 
     fn part_one(&self) -> Result<usize, problem::SolvingError> {

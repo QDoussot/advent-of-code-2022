@@ -3,7 +3,7 @@ use derive_more::Display;
 use super::{Parse, ParseExt};
 use std::{collections::VecDeque, marker::PhantomData};
 
-trait Separator {
+pub trait Separator {
     fn as_bytes() -> &'static [u8];
 }
 
@@ -15,14 +15,23 @@ impl Separator for CommaSep {
     }
 }
 
-struct LineSep {}
+#[derive(Debug)]
+pub struct EmptyLineSep {}
+impl Separator for EmptyLineSep {
+    fn as_bytes() -> &'static [u8] {
+        "\n\n".as_bytes()
+    }
+}
+
+#[derive(Debug)]
+pub struct LineSep {}
 impl Separator for LineSep {
     fn as_bytes() -> &'static [u8] {
         "\n".as_bytes()
     }
 }
 #[derive(Debug)]
-struct Seq<T: Parse + Default, S: Separator> {
+pub struct Seq<T: Parse + Default, S: Separator> {
     p: PhantomData<T>,
     sep: PhantomData<S>,
     res: Vec<T::Out>,
@@ -44,11 +53,11 @@ impl<T: Parse + Default, S: Separator> Default for Seq<T, S> {
 
 #[derive(Display, Debug)]
 #[display(
-    fmt = "failed to parse an element of a sequence: {}, successfully parsed: {:?}",
-    underlying,
-    items
+    fmt = "successfully parsed: {:?},\nfailed to parse an element of a sequence: {}, ",
+    items,
+    underlying
 )]
-struct Error<T: Parse> {
+pub struct Error<T: Parse> {
     items: Vec<T::Out>,
     underlying: T::Error,
 }

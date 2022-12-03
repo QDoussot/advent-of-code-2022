@@ -16,8 +16,13 @@ pub struct Natural<T: FromStr> {
 #[derive(Eq, PartialEq, Debug, Display)]
 pub enum NaturalError<FE> {
     FromUtf8(Utf8Error),
-    FromStr(FE),
+    #[display(fmt = "Failed to parse '{}': {}", context, under)]
+    FromStr {
+        context: String,
+        under: FE,
+    },
 }
+
 impl<T, E: Display> Parse for Natural<T>
 where
     T: FromStr<Err = E>,
@@ -32,7 +37,10 @@ where
 
     fn end(self) -> Result<Self::Out, Self::Error> {
         let string = std::str::from_utf8(&self.bytes).map_err(Self::Error::FromUtf8)?;
-        T::from_str(string).map_err(Self::Error::FromStr)
+        T::from_str(string).map_err(|e| Self::Error::FromStr {
+            context: string.to_string(),
+            under: e,
+        })
     }
 }
 
@@ -57,7 +65,7 @@ mod tests {
         let int = Natural::<usize>::parse(bytes);
         match int.expect_err("An error is expected") {
             NaturalError::FromUtf8(_) => panic!(),
-            NaturalError::FromStr(int_error) => assert_eq!(int_error.kind(), &IntErrorKind::Empty),
+            NaturalError::FromStr { context: _, under } => assert_eq!(under.kind(), &IntErrorKind::Empty),
         }
     }
 }
