@@ -96,7 +96,7 @@ mod tests {
 
     #[test]
     fn it_parses_a_vec_of_usize() {
-        let bytes = ",123".as_bytes();
+        let bytes = "123".as_bytes();
         let numbers = Seq::<Natural<usize>, CommaSep>::parse(bytes).unwrap();
         assert_eq!(numbers, vec![123]);
 
