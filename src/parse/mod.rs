@@ -1,34 +1,32 @@
-use std::str::from_utf8;
-
 use derive_more::Display;
 
 pub trait Parse {
     type Out;
-    type Error;
-    fn read_byte(&mut self, byte: &u8) -> Result<(), Self::Error>;
-    fn end(self) -> Result<Self::Out, Self::Error>;
+    fn read_byte(&mut self, byte: &u8) -> Result<(), Error>;
+    fn end(self) -> Result<Self::Out, Error>;
 }
 
-#[derive(Debug, Display)]
-#[display(fmt = "{}: '{}' -> {}", line_number, current_line, under)]
-pub struct Error<P: Parse> {
+#[derive(Debug, Display, PartialEq, Eq)]
+#[display(fmt = "{} {}", context, message)]
+pub struct Error {
+    //    current_line: String,
+    context: String,
+    message: String,
     line_number: usize,
-    current_line: String,
-    under: P::Error,
 }
 
-impl<P: Parse> Error<P> {
-    fn new(line_number: usize, current_line: String, under: P::Error) -> Self {
+impl Error {
+    pub fn new(context: impl Into<String>, message: impl Into<String>, line_number: usize) -> Self {
         Self {
+            context: context.into(),
+            message: message.into(),
             line_number,
-            current_line,
-            under,
         }
     }
 }
 
 pub trait ParseExt: Parse + Default {
-    fn parse(bytes: &[u8]) -> Result<Self::Out, Self::Error> {
+    fn parse(bytes: &[u8]) -> Result<Self::Out, Error> {
         let mut parser = Self::default();
         for b in bytes {
             parser.read_byte(b)?;
@@ -36,9 +34,9 @@ pub trait ParseExt: Parse + Default {
         parser.end()
     }
 
-    fn parse_with_context(bytes: &[u8]) -> Result<Self::Out, Error<Self>> {
+    fn parse_with_context(mut line_number: usize, bytes: &[u8]) -> Result<(usize, Self::Out), (usize, Error)> {
         let mut parser = Self::default();
-        let mut line_number = 0;
+        //let mut line_number = 0;
         let mut current_line = vec![];
         for b in bytes {
             if b == &0xA {
@@ -47,11 +45,10 @@ pub trait ParseExt: Parse + Default {
             } else {
                 current_line.push(*b);
             }
-            parser
-                .read_byte(b)
-                .map_err(|e| Error::new(line_number, from_utf8(&current_line).unwrap().to_string(), e))?;
+            parser.read_byte(b).map_err(|e| (line_number, e))?;
         }
-        parser.end().map_err(|e| Error::new(line_number, String::new(), e))
+        let out = parser.end().map_err(|e| (line_number, e));
+        out.map(|out| (line_number, out))
     }
 }
 impl<T: Parse + Default> ParseExt for T {}

@@ -4,6 +4,7 @@ use std::fmt::Debug;
 #[derive(Display, Debug)]
 pub enum ParsingError {
     #[display(fmt = "")]
+    #[allow(dead_code)]
     IncorrectLine {
         description: String,
         number: usize,

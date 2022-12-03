@@ -1,11 +1,6 @@
-use derive_more::Display;
-
+use super::Error;
 use super::Parse;
-use std::{
-    fmt::Display,
-    marker::PhantomData,
-    str::{FromStr, Utf8Error},
-};
+use std::{fmt::Display, marker::PhantomData, str::FromStr};
 
 #[derive(Default, Debug)]
 pub struct Natural<T: FromStr> {
@@ -13,44 +8,28 @@ pub struct Natural<T: FromStr> {
     bytes: Vec<u8>,
 }
 
-#[derive(Eq, PartialEq, Debug, Display)]
-pub enum NaturalError<FE> {
-    FromUtf8(Utf8Error),
-    #[display(fmt = "Failed to parse '{}': {}", context, under)]
-    FromStr {
-        context: String,
-        under: FE,
-    },
-}
-
 impl<T, E: Display> Parse for Natural<T>
 where
     T: FromStr<Err = E>,
 {
     type Out = T;
-    type Error = NaturalError<E>;
 
-    fn read_byte(&mut self, byte: &u8) -> Result<(), Self::Error> {
+    fn read_byte(&mut self, byte: &u8) -> Result<(), Error> {
         self.bytes.push(*byte);
         Ok(())
     }
 
-    fn end(self) -> Result<Self::Out, Self::Error> {
-        let string = std::str::from_utf8(&self.bytes).map_err(Self::Error::FromUtf8)?;
-        T::from_str(string).map_err(|e| Self::Error::FromStr {
-            context: string.to_string(),
-            under: e,
-        })
+    fn end(self) -> Result<Self::Out, Error> {
+        let string = std::str::from_utf8(&self.bytes).map_err(|_| Error::new("utf8 shit", "", 0))?;
+        T::from_str(string).map_err(|e| Error::new(string.to_string(), e.to_string(), 0))
     }
 }
 
 #[cfg(test)]
 mod tests {
 
-    use std::num::IntErrorKind;
-
     use super::super::ParseExt;
-    use super::{Natural, NaturalError};
+    use super::Natural;
 
     #[test]
     fn it_parse_a_usize() {
@@ -63,9 +42,6 @@ mod tests {
     fn it_fails_parsing_wrong_value() {
         let bytes = "".as_bytes();
         let int = Natural::<usize>::parse(bytes);
-        match int.expect_err("An error is expected") {
-            NaturalError::FromUtf8(_) => panic!(),
-            NaturalError::FromStr { context: _, under } => assert_eq!(under.kind(), &IntErrorKind::Empty),
-        }
+        assert!(int.is_err());
     }
 }

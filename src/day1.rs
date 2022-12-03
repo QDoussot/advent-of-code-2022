@@ -3,7 +3,7 @@ use itertools::Itertools;
 use crate::parse::natural::Natural;
 use crate::parse::seq::{EmptyLineSep, LineSep, Seq};
 use crate::parse::ParseExt;
-use crate::problem::{self, ParsingError};
+use crate::problem::{self};
 
 #[derive(Debug)]
 pub struct Inventories(Vec<Vec<usize>>);
@@ -11,11 +11,11 @@ type Parser = Seq<Seq<Natural<usize>, LineSep>, EmptyLineSep>;
 impl problem::Problem for Inventories {
     fn parse(lines: Vec<String>) -> Result<Self, problem::ParsingError> {
         let bytes = lines.join("\n");
-        let inventories = Parser::parse_with_context(bytes.as_bytes());
+        let inventories = Parser::parse_with_context(1, bytes.as_bytes());
         match inventories {
-            Ok(inv) => Ok(Self(inv)),
+            Ok(inv) => Ok(Self(inv.1)),
             Err(e) => {
-                println!("{}", e);
+                println!("{:?}", e);
                 Ok(Self(vec![]))
             }
         }
