@@ -2,6 +2,7 @@ use std::io::{self, BufRead, BufReader};
 use structopt::StructOpt;
 
 mod day1;
+mod parse;
 mod problem;
 use problem::Error;
 
