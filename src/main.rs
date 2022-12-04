@@ -2,6 +2,7 @@ use std::io::{self, BufRead, BufReader};
 use structopt::StructOpt;
 
 mod day1;
+mod day2;
 mod parse;
 mod problem;
 use problem::Error;
@@ -37,6 +38,7 @@ fn main() -> Result<(), Error> {
 
     let solution: Result<usize, problem::Error> = match opt.day {
         1 => problem::solve::<day1::Inventories>(lines, opt.part),
+        2 => problem::solve::<day2::Guide>(lines, opt.part),
         _ => Err(Error::NoCorrespondingSolver),
     };
     println!("{}", solution?);

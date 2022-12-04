@@ -10,7 +10,13 @@ pub enum ParsingError {
         number: usize,
         line: String,
     },
+    Parse(crate::parse::Error),
     _UnverifiedConstraint(String),
+}
+impl From<crate::parse::Error> for ParsingError {
+    fn from(e: crate::parse::Error) -> Self {
+        Self::Parse(e)
+    }
 }
 
 #[derive(Display, Debug)]

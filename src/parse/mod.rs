@@ -61,5 +61,7 @@ pub trait ParseExt: Parse + Default {
 }
 impl<T: Parse + Default> ParseExt for T {}
 
+pub mod couple;
 pub mod natural;
+pub mod separator;
 pub mod seq;

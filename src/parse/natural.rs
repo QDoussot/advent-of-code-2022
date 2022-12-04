@@ -3,10 +3,19 @@ use super::Error;
 use super::Parse;
 use std::{fmt::Display, marker::PhantomData, str::FromStr};
 
-#[derive(Default, Debug)]
+#[derive(Debug)]
 pub struct Natural<T: FromStr> {
     p: PhantomData<T>,
     bytes: Vec<u8>,
+}
+impl<T: FromStr> Default for Natural<T> {
+    fn default() -> Self {
+        Self {
+            p: Default::default(),
+            bytes: vec![],
+        }
+    }
+    //
 }
 
 impl<T, E: Display> Parse for Natural<T>

@@ -1,8 +1,9 @@
 use itertools::Itertools;
 
 use crate::parse::natural::Natural;
-use crate::parse::seq::{EmptyLineSep, LineSep, Seq};
-use crate::parse::{Context, ParseExt};
+use crate::parse::separator::{EmptyLineSep, LineSep};
+use crate::parse::seq::Seq;
+use crate::parse::ParseExt;
 use crate::problem::{self};
 
 #[derive(Debug)]
@@ -11,14 +12,8 @@ type Parser = Seq<Seq<Natural<usize>, LineSep>, EmptyLineSep>;
 impl problem::Problem for Inventories {
     fn parse(lines: Vec<String>) -> Result<Self, problem::ParsingError> {
         let bytes = lines.join("\n");
-        let inventories = Parser::parse_with_context(bytes.as_bytes(), Context::default());
-        match inventories {
-            Ok(inv) => Ok(Self(inv)),
-            Err(e) => {
-                println!("{:?}", e);
-                Ok(Self(vec![]))
-            }
-        }
+        let inventories = Parser::parse(bytes.as_bytes());
+        inventories.map(Self).map_err(Into::into)
     }
 
     fn part_one(&self) -> Result<usize, problem::SolvingError> {

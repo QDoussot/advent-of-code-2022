@@ -1,33 +1,6 @@
-use super::{Context, Error, Parse, ParseExt};
+use super::{separator::Separator, Context, Error, Parse, ParseExt};
 use std::{collections::VecDeque, marker::PhantomData};
 
-pub trait Separator {
-    fn as_bytes() -> &'static [u8];
-}
-
-#[derive(Debug)]
-struct CommaSep {}
-impl Separator for CommaSep {
-    fn as_bytes() -> &'static [u8] {
-        ",".as_bytes()
-    }
-}
-
-#[derive(Debug)]
-pub struct EmptyLineSep {}
-impl Separator for EmptyLineSep {
-    fn as_bytes() -> &'static [u8] {
-        "\n\n".as_bytes()
-    }
-}
-
-#[derive(Debug)]
-pub struct LineSep {}
-impl Separator for LineSep {
-    fn as_bytes() -> &'static [u8] {
-        "\n".as_bytes()
-    }
-}
 #[derive(Debug)]
 pub struct Seq<T: Parse + Default, S: Separator> {
     previous_context: Context,
@@ -55,6 +28,8 @@ impl<T: Parse + Default, S: Separator> Parse for Seq<T, S> {
     type Out = Vec<T::Out>;
 
     fn read_byte(&mut self, byte: &u8, context: Context) -> Result<(), Error> {
+        self.potential.push_back(*byte);
+
         if self.potential.len() == S::as_bytes().len() {
             if self.potential.make_contiguous() == S::as_bytes() {
                 let item = T::parse_with_context(&self.accepted, self.previous_context)?;
@@ -68,19 +43,14 @@ impl<T: Parse + Default, S: Separator> Parse for Seq<T, S> {
                 self.accepted.push(byte);
             }
         }
-        self.potential.push_back(*byte);
         Ok(())
     }
 
     fn end(mut self, context: Context) -> Result<Self::Out, Error> {
-        if !self.potential.is_empty() && self.potential != S::as_bytes() {
-            self.accepted.extend(self.potential.to_owned())
-        }
-        if !self.accepted.is_empty() {
-            match T::parse_with_context(&self.accepted, context) {
-                Ok(item) => self.res.push(item),
-                Err(err) => return Err(err),
-            }
+        self.accepted.extend(self.potential.to_owned());
+        match T::parse_with_context(&self.accepted, context) {
+            Ok(item) => self.res.push(item),
+            Err(err) => return Err(err),
         }
         Ok(self.res)
     }
@@ -88,9 +58,9 @@ impl<T: Parse + Default, S: Separator> Parse for Seq<T, S> {
 
 #[cfg(test)]
 mod tests {
-    use crate::parse::seq::LineSep;
+    use crate::parse::separator::{CommaSep, LineSep};
 
-    use super::{super::natural::Natural, super::ParseExt, CommaSep, Error, Seq};
+    use super::{super::natural::Natural, super::ParseExt, Error, Seq};
 
     #[test]
     fn it_parses_a_vec_of_usize() {
@@ -105,7 +75,7 @@ mod tests {
 
     #[test]
     fn it_parses_a_vec_of_vec_of_usize() -> Result<(), Error> {
-        let bytes = "123,".as_bytes();
+        let bytes = "123".as_bytes();
         let numbers = Seq::<Seq<Natural<usize>, CommaSep>, LineSep>::parse(bytes)?;
         assert_eq!(numbers, vec![vec![123]]);
 
@@ -115,6 +85,17 @@ mod tests {
             .as_bytes();
         let numbers = Seq::<Seq<Natural<usize>, CommaSep>, LineSep>::parse(bytes).unwrap();
         assert_eq!(numbers, vec![vec![123, 456], vec![1, 111], vec![222]]);
+        Ok(())
+    }
+
+    #[test]
+    fn it_parses_a_vec_of_string() -> Result<(), Error> {
+        let bytes = ",,coucou,,".as_bytes();
+        let expected = Seq::<Natural<String>, CommaSep>::parse(bytes)?;
+        assert_eq!(
+            expected.iter().map(AsRef::as_ref).collect::<Vec<&str>>(),
+            vec!["", "", "coucou", "", ""]
+        );
         Ok(())
     }
 }
