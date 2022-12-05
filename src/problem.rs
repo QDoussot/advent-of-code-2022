@@ -11,7 +11,7 @@ pub enum ParsingError {
         line: String,
     },
     Parse(crate::parse::Error),
-    _UnverifiedConstraint(String),
+    UnverifiedConstraint(String),
 }
 impl From<crate::parse::Error> for ParsingError {
     fn from(e: crate::parse::Error) -> Self {
@@ -22,7 +22,7 @@ impl From<crate::parse::Error> for ParsingError {
 #[derive(Display, Debug)]
 pub enum SolvingError {
     _InternError,
-    _ExpectationUnfulfilled(String),
+    ExpectationUnfulfilled(String),
 }
 
 pub trait Problem: Sized {
@@ -36,7 +36,7 @@ pub enum Error {
     CantOpenInputFile(String),
     _ParsingFailed(ParsingError),
     NoCorrespondingSolver,
-    _SolverFailed(SolvingError),
+    SolverFailed(SolvingError),
 }
 
 pub fn solve<T: Problem + Debug>(lines: Vec<String>, part: usize) -> Result<usize, Error> {
@@ -46,8 +46,8 @@ pub fn solve<T: Problem + Debug>(lines: Vec<String>, part: usize) -> Result<usiz
         return Ok(0);
     }
     if part == 1 {
-        problem.part_one().map_err(|_| Error::NoCorrespondingSolver)
+        problem.part_one().map_err(Error::SolverFailed)
     } else {
-        problem.part_two().map_err(|_| Error::NoCorrespondingSolver)
+        problem.part_two().map_err(Error::SolverFailed)
     }
 }
