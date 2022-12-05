@@ -1,9 +1,13 @@
+#![allow(incomplete_features)]
+#![feature(adt_const_params)]
+
 use std::io::{self, BufRead, BufReader};
 use structopt::StructOpt;
 
 mod day1;
 mod day2;
 mod day3;
+mod day4;
 
 mod parse;
 mod problem;
@@ -42,6 +46,7 @@ fn main() -> Result<(), Error> {
         1 => problem::solve::<day1::Inventories>(lines, opt.part),
         2 => problem::solve::<day2::Guide>(lines, opt.part),
         3 => problem::solve::<day3::RuckSacks>(lines, opt.part),
+        4 => problem::solve::<day4::AssignmentsPairs>(lines, opt.part),
         _ => Err(Error::NoCorrespondingSolver),
     };
     println!("{}", solution?);

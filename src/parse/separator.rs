@@ -33,3 +33,12 @@ impl Separator for SpaceSep {
         " ".as_bytes()
     }
 }
+
+#[derive(Debug)]
+pub struct StrSep<const S: &'static str> {}
+
+impl<const S: &'static str> Separator for StrSep<S> {
+    fn as_bytes() -> &'static [u8] {
+        S.as_bytes()
+    }
+}
