@@ -1,5 +1,6 @@
 #![allow(incomplete_features)]
 #![feature(adt_const_params)]
+#![feature(is_sorted)]
 
 use std::io::{self, BufRead, BufReader};
 use structopt::StructOpt;
@@ -9,6 +10,7 @@ mod day2;
 mod day3;
 mod day4;
 
+mod day5;
 mod parse;
 mod problem;
 use problem::Error;
