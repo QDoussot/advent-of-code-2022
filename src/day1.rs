@@ -22,7 +22,7 @@ impl problem::Problem for Inventories {
     }
 
     fn part_two(&self) -> Result<String, problem::SolvingError> {
-        let max_inv:usize = self
+        let max_inv: usize = self
             .0
             .iter()
             .map(|inv| inv.iter().sum::<usize>())

@@ -103,7 +103,7 @@ impl Problem for RuckSacks {
     }
 
     fn part_two(&self) -> Result<String, problem::SolvingError> {
-        let res:usize = self
+        let res: usize = self
             .0
             .iter()
             .chunks(3)

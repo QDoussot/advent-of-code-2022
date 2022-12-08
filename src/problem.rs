@@ -43,8 +43,7 @@ pub fn solve<T: Problem + Debug>(lines: Vec<String>, part: usize) -> Result<Stri
     let problem = T::parse(lines).map_err(Error::_ParsingFailed)?;
     if part == 0 {
         Ok(format!("{:?}", problem))
-    }
-    else if part == 1 {
+    } else if part == 1 {
         problem.part_one().map_err(Error::SolverFailed)
     } else {
         problem.part_two().map_err(Error::SolverFailed)

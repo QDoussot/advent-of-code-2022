@@ -2,6 +2,7 @@ use std::str::FromStr;
 
 use itertools::Itertools;
 
+use crate::problem::SolvingError::ExpectationUnfulfilled;
 use crate::{
     parse::{
         capture::Capture,
@@ -14,7 +15,6 @@ use crate::{
     },
     problem::{ParsingError, Problem, SolvingError},
 };
-        use crate::problem::SolvingError::ExpectationUnfulfilled;
 
 #[derive(Debug)]
 struct Move {
@@ -102,7 +102,7 @@ impl Problem for RearrangementProcedure {
             ));
         }
 
-        let stacks : Vec<_> = stacks
+        let stacks: Vec<_> = stacks
             .into_iter()
             .map(|stack| {
                 stack
@@ -117,24 +117,20 @@ impl Problem for RearrangementProcedure {
 
         if let Some(_) = moves.iter().find(|order| !(1..=stacks.len()).contains(&order.from)) {
             return Err(ParsingError::UnverifiedConstraint(
-                    "Oh noooo! you grabbed an elf which was standing near the crates stacks".into(),
+                "Oh noooo! you grabbed an elf which was standing near the crates stacks".into(),
             ));
         }
 
         if let Some(_) = moves.iter().find(|order| !(1..=stacks.len()).contains(&order.to)) {
             return Err(ParsingError::UnverifiedConstraint(
-                    "Oh noooo! You throwned a crate away of the ship !".into(),
+                "Oh noooo! You throwned a crate away of the ship !".into(),
             ));
         }
 
-        Ok(Self {
-            stacks,
-            moves 
-        })
+        Ok(Self { stacks, moves })
     }
 
     fn part_one(&self) -> Result<String, SolvingError> {
-
         let mut stacks = self.stacks.clone();
         for m in self.moves.iter() {
             for _ in 1..=m.n {
@@ -154,19 +150,16 @@ impl Problem for RearrangementProcedure {
     fn part_two(&self) -> Result<String, SolvingError> {
         let mut stacks = self.stacks.clone();
         for m in self.moves.iter() {
-            let remaining_crates = stacks[m.from -1].len() as isize - m.n as isize;
+            let remaining_crates = stacks[m.from - 1].len() as isize - m.n as isize;
             if remaining_crates >= 0 {
-                let mut moved = stacks[m.from -1].split_off(remaining_crates as usize);
-                stacks[m.to-1].append(&mut moved);
-            }
-            else {
+                let mut moved = stacks[m.from - 1].split_off(remaining_crates as usize);
+                stacks[m.to - 1].append(&mut moved);
+            } else {
                 return Err(ExpectationUnfulfilled(
-                        "You are trying to pull a crate from an empty stack budy !".into(),
+                    "You are trying to pull a crate from an empty stack budy !".into(),
                 ));
             }
-            }
-        Ok(stacks.iter().map(|stack| stack.last()).flatten().join(""))
         }
-
-
+        Ok(stacks.iter().map(|stack| stack.last()).flatten().join(""))
+    }
 }
