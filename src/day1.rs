@@ -16,13 +16,13 @@ impl problem::Problem for Inventories {
         inventories.map(Self).map_err(Into::into)
     }
 
-    fn part_one(&self) -> Result<usize, problem::SolvingError> {
+    fn part_one(&self) -> Result<String, problem::SolvingError> {
         let max_inv = self.0.iter().map(|inv| inv.iter().sum::<usize>()).max().unwrap();
-        Ok(max_inv)
+        Ok(max_inv.to_string())
     }
 
-    fn part_two(&self) -> Result<usize, problem::SolvingError> {
-        let max_inv = self
+    fn part_two(&self) -> Result<String, problem::SolvingError> {
+        let max_inv:usize = self
             .0
             .iter()
             .map(|inv| inv.iter().sum::<usize>())
@@ -30,6 +30,6 @@ impl problem::Problem for Inventories {
             .rev()
             .take(3)
             .sum();
-        Ok(max_inv)
+        Ok(max_inv.to_string())
     }
 }

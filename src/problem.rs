@@ -27,8 +27,8 @@ pub enum SolvingError {
 
 pub trait Problem: Sized {
     fn parse(lines: Vec<String>) -> Result<Self, ParsingError>;
-    fn part_one(&self) -> Result<usize, SolvingError>;
-    fn part_two(&self) -> Result<usize, SolvingError>;
+    fn part_one(&self) -> Result<String, SolvingError>;
+    fn part_two(&self) -> Result<String, SolvingError>;
 }
 
 #[derive(Display, Debug)]
@@ -39,13 +39,12 @@ pub enum Error {
     SolverFailed(SolvingError),
 }
 
-pub fn solve<T: Problem + Debug>(lines: Vec<String>, part: usize) -> Result<usize, Error> {
+pub fn solve<T: Problem + Debug>(lines: Vec<String>, part: usize) -> Result<String, Error> {
     let problem = T::parse(lines).map_err(Error::_ParsingFailed)?;
     if part == 0 {
-        println!("{:?}", problem);
-        return Ok(0);
+        Ok(format!("{:?}", problem))
     }
-    if part == 1 {
+    else if part == 1 {
         problem.part_one().map_err(Error::SolverFailed)
     } else {
         problem.part_two().map_err(Error::SolverFailed)

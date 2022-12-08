@@ -91,19 +91,19 @@ impl Problem for RuckSacks {
         Ok(Self(ruck_sacks))
     }
 
-    fn part_one(&self) -> Result<usize, problem::SolvingError> {
-        let res = self
+    fn part_one(&self) -> Result<String, problem::SolvingError> {
+        let res: usize = self
             .0
             .iter()
             .map(|rs| rs.common_item().and_then(priority))
             .collect::<Result<Vec<_>, _>>()?
             .into_iter()
             .sum();
-        Ok(res)
+        Ok(res.to_string())
     }
 
-    fn part_two(&self) -> Result<usize, problem::SolvingError> {
-        let res = self
+    fn part_two(&self) -> Result<String, problem::SolvingError> {
+        let res:usize = self
             .0
             .iter()
             .chunks(3)
@@ -120,6 +120,6 @@ impl Problem for RuckSacks {
             .collect::<Result<Vec<_>, _>>()?
             .into_iter()
             .sum();
-        Ok(res)
+        Ok(res.to_string())
     }
 }

@@ -30,19 +30,19 @@ impl Problem for AssignmentsPairs {
         Ok(Self(ap))
     }
 
-    fn part_one(&self) -> Result<usize, SolvingError> {
+    fn part_one(&self) -> Result<String, SolvingError> {
         let overlaps = self.0.iter().filter(|(left, right)| {
             (left.contains(&right.start()) && left.contains(&right.end()))
                 || (right.contains(&left.start()) && right.contains(&left.end()))
         });
-        Ok(overlaps.count())
+        Ok(overlaps.count().to_string())
     }
 
-    fn part_two(&self) -> Result<usize, SolvingError> {
+    fn part_two(&self) -> Result<String, SolvingError> {
         let overlaps = self.0.iter().filter(|(left, right)| {
             (left.contains(&right.start()) || left.contains(&right.end()))
                 || (right.contains(&left.start()) || right.contains(&left.end()))
         });
-        Ok(overlaps.count())
+        Ok(overlaps.count().to_string())
     }
 }

@@ -137,24 +137,24 @@ impl Problem for Guide {
         Ok(Self(guide))
     }
 
-    fn part_one(&self) -> Result<usize, crate::problem::SolvingError> {
+    fn part_one(&self) -> Result<String, crate::problem::SolvingError> {
         let score: usize = self
             .0
             .iter()
             .map(|(o, m)| (o, as_play(*m)))
             .map(|(o, m)| m.0.fight(&o.0).score() + m.0.score())
             .sum();
-        Ok(score)
+        Ok(score.to_string())
     }
 
-    fn part_two(&self) -> Result<usize, crate::problem::SolvingError> {
+    fn part_two(&self) -> Result<String, crate::problem::SolvingError> {
         let score: usize = self
             .0
             .iter()
             .map(|(o, m)| (o, as_outcome(*m)))
             .map(|(o, m)| o.0.has_outcome(m).score() + m.score())
             .sum();
-        Ok(score)
+        Ok(score.to_string())
     }
     //
 }

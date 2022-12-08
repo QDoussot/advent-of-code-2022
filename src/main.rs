@@ -42,11 +42,13 @@ fn main() -> Result<(), Error> {
         .collect::<Result<Vec<_>, io::Error>>()
         .unwrap();
 
-    let solution: Result<usize, problem::Error> = match opt.day {
+    let solution: Result<String, problem::Error> = match opt.day {
         1 => problem::solve::<day1::Inventories>(lines, opt.part),
         2 => problem::solve::<day2::Guide>(lines, opt.part),
         3 => problem::solve::<day3::RuckSacks>(lines, opt.part),
         4 => problem::solve::<day4::AssignmentsPairs>(lines, opt.part),
+        5 => problem::solve::<day5::RearrangementProcedure>(lines, opt.part),
+
         _ => Err(Error::NoCorrespondingSolver),
     };
     println!("{}", solution?);
