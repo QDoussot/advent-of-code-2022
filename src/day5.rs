@@ -50,7 +50,7 @@ impl StackSymbol {
 
 fn is_valid_stack(stack: &[StackSymbol]) -> bool {
     let pattern: Vec<usize> = stack.iter().map(StackSymbol::vertical_group_order).dedup().collect();
-    vec![1, 2] == pattern || vec![0, 1, 2] == pattern
+    vec![1] == pattern || vec![0, 1] == pattern
 }
 
 impl FromStr for StackSymbol {
@@ -80,7 +80,7 @@ impl Problem for RearrangementProcedure {
         type StackParser = Seq<Table<3, StrSep<" ">, Natural<StackSymbol>>, LineSep>;
         type ProcedureParser = Seq<Capture<"move % from % to %", 3, Natural<usize>>, LineSep>;
         let res = Couple::<StackParser, EmptyLineSep, ProcedureParser>::parse(lines.join("\n").as_bytes())?;
-        let stacks_rows = res.0;
+        let mut stacks_rows = res.0;
 
         if !stacks_rows.iter().map(|hor| hor.len()).all_equal() {
             return Err(ParsingError::UnverifiedConstraint(
@@ -88,7 +88,32 @@ impl Problem for RearrangementProcedure {
             ));
         }
 
+        let column_line = stacks_rows.pop().ok_or(ParsingError::UnverifiedConstraint(
+            "Their is not even a columns indicators line".into(),
+        ))?;
+
+        if !column_line
+            .iter()
+            .enumerate()
+            .map(|(zero_ind, sym)| (zero_ind + 1, sym))
+            .all(|(expected, symbol)| matches!(symbol, StackSymbol::ColumnIndicator(actual) if actual == &expected))
+        {
+            return Err(ParsingError::UnverifiedConstraint(
+                "Last line must be indicating columns (in right order)".into(),
+            ));
+        }
+
+        if !column_line
+            .iter()
+            .all(|symbol| matches!(symbol, StackSymbol::ColumnIndicator(_)))
+        {
+            return Err(ParsingError::UnverifiedConstraint(
+                "Last line must be indicating columns".into(),
+            ));
+        }
+
         let stacks: Vec<Vec<StackSymbol>> = (0..stacks_rows[0].len()).map(|_| Vec::new()).collect();
+
         let stacks = stacks_rows.into_iter().fold(stacks, |mut acc, row| {
             row.into_iter().enumerate().for_each(|(col, symbol)| {
                 acc[col].push(symbol);
