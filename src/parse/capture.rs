@@ -105,9 +105,9 @@ mod tests {
     #[test]
     fn it_parses_the_move_command() {
         type Parser = Capture<"move % from % to %", 3, Natural<usize>>;
-        let bytes = "move 32% from 101 to 202".as_bytes();
+        let bytes = "move 32 from 101 to 202".as_bytes();
         let vec = Parser::parse(bytes).unwrap();
-        assert_eq!(vec![32, 101, 102], vec);
+        assert_eq!(vec![32, 101, 202], vec);
     }
 
     #[test]
