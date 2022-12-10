@@ -1,22 +1,56 @@
 use super::{separator::Separator, Context, Error, Parse, ParseExt};
 use std::{collections::VecDeque, marker::PhantomData};
 
+#[derive(PartialEq, Eq)]
+pub enum EmptyBehavior {
+    Skip,
+    Keep,
+    SkipFinal,
+}
+
+pub trait EmptyBehaviorLike {
+    fn behavior() -> EmptyBehavior;
+}
+
+pub struct Keep {}
+impl EmptyBehaviorLike for Keep {
+    fn behavior() -> EmptyBehavior {
+        EmptyBehavior::Keep
+    }
+}
+
+pub struct Skip {}
+impl EmptyBehaviorLike for Skip {
+    fn behavior() -> EmptyBehavior {
+        EmptyBehavior::Skip
+    }
+}
+
+pub struct SkipFinal {}
+impl EmptyBehaviorLike for SkipFinal {
+    fn behavior() -> EmptyBehavior {
+        EmptyBehavior::SkipFinal
+    }
+}
+
 #[derive(Debug)]
-pub struct Seq<T: Parse + Default, S: Separator> {
+pub struct Seq<T: Parse + Default, S: Separator, EB: EmptyBehaviorLike = Keep> {
     previous_context: Context,
     p: PhantomData<T>,
     sep: PhantomData<S>,
+    empty_beh: PhantomData<EB>,
     res: Vec<T::Out>,
     accepted: Vec<u8>,
     potential: VecDeque<u8>,
 }
 
-impl<T: Parse + Default, S: Separator> Default for Seq<T, S> {
+impl<T: Parse + Default, S: Separator, EB: EmptyBehaviorLike> Default for Seq<T, S, EB> {
     fn default() -> Self {
         Self {
             previous_context: Default::default(),
             p: Default::default(),
             sep: Default::default(),
+            empty_beh: Default::default(),
             res: Default::default(),
             accepted: Default::default(),
             potential: Default::default(),
@@ -24,7 +58,7 @@ impl<T: Parse + Default, S: Separator> Default for Seq<T, S> {
     }
 }
 
-impl<T: Parse + Default, S: Separator> Parse for Seq<T, S> {
+impl<T: Parse + Default, S: Separator, EB: EmptyBehaviorLike> Parse for Seq<T, S, EB> {
     type Out = Vec<T::Out>;
 
     fn read_byte(&mut self, byte: &u8, context: Context) -> Result<(), Error> {
@@ -32,8 +66,10 @@ impl<T: Parse + Default, S: Separator> Parse for Seq<T, S> {
 
         if self.potential.len() == S::as_bytes().len() {
             if self.potential.make_contiguous() == S::as_bytes() {
-                let item = T::parse_with_context(&self.accepted, self.previous_context)?;
-                self.res.push(item);
+                if !self.accepted.is_empty() || EB::behavior() != EmptyBehavior::Skip {
+                    let item = T::parse_with_context(&self.accepted, self.previous_context)?;
+                    self.res.push(item);
+                }
                 self.potential.clear();
                 self.accepted.clear();
             } else if let Some(byte) = self.potential.pop_front() {
@@ -46,11 +82,11 @@ impl<T: Parse + Default, S: Separator> Parse for Seq<T, S> {
         Ok(())
     }
 
-    fn end(mut self, context: Context) -> Result<Self::Out, Error> {
+    fn end(mut self, _: Context) -> Result<Self::Out, Error> {
         self.accepted.extend(self.potential.to_owned());
-        match T::parse_with_context(&self.accepted, context) {
-            Ok(item) => self.res.push(item),
-            Err(err) => return Err(err),
+        if !self.accepted.is_empty() || EB::behavior() == EmptyBehavior::Keep {
+            let item = T::parse_with_context(&self.accepted, self.previous_context)?;
+            self.res.push(item);
         }
         Ok(self.res)
     }
@@ -58,7 +94,10 @@ impl<T: Parse + Default, S: Separator> Parse for Seq<T, S> {
 
 #[cfg(test)]
 mod tests {
-    use crate::parse::separator::{CommaSep, LineSep};
+    use crate::parse::{
+        separator::{CommaSep, LineSep},
+        seq::Skip,
+    };
 
     use super::{super::natural::Natural, super::ParseExt, Error, Seq};
 
@@ -95,6 +134,28 @@ mod tests {
         assert_eq!(
             expected.iter().map(AsRef::as_ref).collect::<Vec<&str>>(),
             vec!["", "", "coucou", "", ""]
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn it_skips_empty_field_if_specified() -> Result<(), Error> {
+        let bytes = ",lol,,coucou,,".as_bytes();
+        let expected = Seq::<Natural<String>, CommaSep, Skip>::parse(bytes)?;
+        assert_eq!(
+            expected.iter().map(AsRef::as_ref).collect::<Vec<&str>>(),
+            vec!["lol", "coucou",]
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn it_skips_empty_field_if_specified_2() -> Result<(), Error> {
+        let bytes = ",".as_bytes();
+        let expected = Seq::<Natural<String>, CommaSep, Skip>::parse(bytes)?;
+        assert_eq!(
+            expected.iter().map(AsRef::as_ref).collect::<Vec<&str>>(),
+            Vec::<&str>::new()
         );
         Ok(())
     }
