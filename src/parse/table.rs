@@ -15,7 +15,7 @@ impl Default for Token {
 pub struct Table<const N: usize, S: Separator, T: Parse + Default> {
     p: PhantomData<T>,
     sep: PhantomData<S>,
-    previous_context: Context,
+    previous_context: Option<Context>,
     accepted: Vec<u8>,
     curr_token: Token,
     res: Vec<T::Out>,
@@ -38,13 +38,19 @@ impl<const N: usize, S: Separator, T: Parse + Default> Parse for Table<N, S, T> 
     type Out = Vec<T::Out>;
 
     fn read_byte(&mut self, byte: &u8, context: Context) -> Result<(), Error> {
+        let previous_context = self.previous_context.unwrap_or(context);
+        self.previous_context = Some(previous_context);
         match self.curr_token {
             Token::Item => {
                 self.accepted.push(*byte);
                 if self.accepted.len() == N {
-                    let item = T::parse_with_context(&self.accepted, self.previous_context)?;
+                    let item = T::parse_with_context(&self.accepted, previous_context)?;
                     self.res.push(item);
-                    self.curr_token = Token::Separator;
+                    if S::as_bytes().len() > 0 {
+                        self.curr_token = Token::Separator;
+                        self.previous_context = None;
+                    }
+
                     self.accepted.clear();
                 }
                 Ok(())
@@ -55,12 +61,13 @@ impl<const N: usize, S: Separator, T: Parse + Default> Parse for Table<N, S, T> 
                     if self.accepted == S::as_bytes() {
                         self.curr_token = Token::Item;
                         self.accepted.clear();
+                        self.previous_context = None;
                         Ok(())
                     } else {
                         Err(Error::new(
                             std::str::from_utf8(&self.accepted).unwrap(),
                             format!("Wrong separator, expected '{:?}'", S::as_bytes()),
-                            context.line,
+                            previous_context.line,
                         ))
                     }
                 } else {
