@@ -34,13 +34,13 @@ pub trait Problem: Sized {
 #[derive(Display, Debug)]
 pub enum Error {
     CantOpenInputFile(String),
-    _ParsingFailed(ParsingError),
+    ParsingFailed(ParsingError),
     NoCorrespondingSolver,
     SolverFailed(SolvingError),
 }
 
 pub fn solve<T: Problem + Debug>(lines: Vec<String>, part: usize) -> Result<String, Error> {
-    let problem = T::parse(lines).map_err(Error::_ParsingFailed)?;
+    let problem = T::parse(lines).map_err(Error::ParsingFailed)?;
     if part == 0 {
         Ok(format!("{:#?}", problem))
     } else if part == 1 {
