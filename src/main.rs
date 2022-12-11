@@ -13,6 +13,8 @@ mod day4;
 mod day5;
 mod day6;
 mod day7;
+mod day8;
+
 mod parse;
 mod problem;
 use problem::Error;
@@ -54,6 +56,7 @@ fn main() -> Result<(), Error> {
         5 => problem::solve::<day5::RearrangementProcedure>(lines, opt.part),
         6 => problem::solve::<day6::Signal>(lines, opt.part),
         7 => problem::solve::<day7::FileSystem>(lines, opt.part),
+        8 => problem::solve::<day8::Forest>(lines, opt.part),
 
         _ => Err(Error::NoCorrespondingSolver),
     };
