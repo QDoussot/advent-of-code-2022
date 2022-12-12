@@ -1,6 +1,8 @@
 #![allow(incomplete_features)]
 #![feature(adt_const_params)]
 #![feature(is_sorted)]
+#![feature(iter_repeat_n)]
+#![feature(iter_array_chunks)]
 
 use std::io::{self, BufRead, BufReader};
 use structopt::StructOpt;
@@ -15,9 +17,23 @@ mod day6;
 mod day7;
 mod day8;
 
+mod day9;
 mod parse;
 mod problem;
 use problem::Error;
+
+pub mod prelude {
+    pub use crate::parse::{
+        capture::Capture,
+        couple::Couple,
+        natural::Natural,
+        separator::{EmptyLineSep, LineSep, SpaceSep, StrSep},
+        seq::Seq,
+        table::Table,
+        ParseExt,
+    };
+    pub use crate::problem::*;
+}
 
 #[derive(StructOpt)]
 struct Opt {
@@ -57,6 +73,7 @@ fn main() -> Result<(), Error> {
         6 => problem::solve::<day6::Signal>(lines, opt.part),
         7 => problem::solve::<day7::FileSystem>(lines, opt.part),
         8 => problem::solve::<day8::Forest>(lines, opt.part),
+        9 => problem::solve::<day9::Movements>(lines, opt.part),
 
         _ => Err(Error::NoCorrespondingSolver),
     };
