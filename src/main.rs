@@ -7,17 +7,17 @@
 use std::io::{self, BufRead, BufReader};
 use structopt::StructOpt;
 
-mod day1;
-mod day2;
-mod day3;
-mod day4;
+mod day01;
+mod day02;
+mod day03;
+mod day04;
 
-mod day5;
-mod day6;
-mod day7;
-mod day8;
+mod day05;
+mod day06;
+mod day07;
+mod day08;
 
-mod day9;
+mod day09;
 mod parse;
 mod problem;
 use problem::Error;
@@ -65,15 +65,15 @@ fn main() -> Result<(), Error> {
         .unwrap();
 
     let solution: Result<String, problem::Error> = match opt.day {
-        1 => problem::solve::<day1::Inventories>(lines, opt.part),
-        2 => problem::solve::<day2::Guide>(lines, opt.part),
-        3 => problem::solve::<day3::RuckSacks>(lines, opt.part),
-        4 => problem::solve::<day4::AssignmentsPairs>(lines, opt.part),
-        5 => problem::solve::<day5::RearrangementProcedure>(lines, opt.part),
-        6 => problem::solve::<day6::Signal>(lines, opt.part),
-        7 => problem::solve::<day7::FileSystem>(lines, opt.part),
-        8 => problem::solve::<day8::Forest>(lines, opt.part),
-        9 => problem::solve::<day9::Movements>(lines, opt.part),
+        1 => problem::solve::<day01::Inventories>(lines, opt.part),
+        2 => problem::solve::<day02::Guide>(lines, opt.part),
+        3 => problem::solve::<day03::RuckSacks>(lines, opt.part),
+        4 => problem::solve::<day04::AssignmentsPairs>(lines, opt.part),
+        5 => problem::solve::<day05::RearrangementProcedure>(lines, opt.part),
+        6 => problem::solve::<day06::Signal>(lines, opt.part),
+        7 => problem::solve::<day07::FileSystem>(lines, opt.part),
+        8 => problem::solve::<day08::Forest>(lines, opt.part),
+        9 => problem::solve::<day09::Movements>(lines, opt.part),
 
         _ => Err(Error::NoCorrespondingSolver),
     };
