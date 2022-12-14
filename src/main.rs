@@ -26,6 +26,7 @@ pub mod prelude {
     pub use crate::parse::{
         capture::Capture,
         couple::Couple,
+        either::Either,
         natural::Natural,
         separator::{EmptyLineSep, LineSep, SpaceSep, StrSep},
         seq::Seq,

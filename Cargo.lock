@@ -16,6 +16,7 @@ name = "aoc-2022"
 version = "0.1.0"
 dependencies = [
  "derive_more",
+ "either",
  "itertools",
  "structopt",
  "strum",

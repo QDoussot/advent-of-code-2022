@@ -63,6 +63,7 @@ impl<T: Parse + Default> ParseExt for T {}
 
 pub mod capture;
 pub mod couple;
+pub mod either;
 pub mod natural;
 pub mod separator;
 pub mod seq;
