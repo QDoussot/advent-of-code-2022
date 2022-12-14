@@ -18,6 +18,7 @@ mod day07;
 mod day08;
 
 mod day09;
+mod day10;
 mod parse;
 mod problem;
 use problem::Error;
@@ -75,6 +76,7 @@ fn main() -> Result<(), Error> {
         7 => problem::solve::<day07::FileSystem>(lines, opt.part),
         8 => problem::solve::<day08::Forest>(lines, opt.part),
         9 => problem::solve::<day09::Movements>(lines, opt.part),
+        10 => problem::solve::<day10::Program>(lines, opt.part),
 
         _ => Err(Error::NoCorrespondingSolver),
     };
