@@ -93,12 +93,20 @@ impl<const N: usize, S: Separator, T: Parse + Default> Parse for Table<N, S, T> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parse::{natural::Natural, separator::StrSep, table::Table};
+    use crate::parse::{natural::Natural, separator::StrSep, table::Table, StaticStr};
+
+
 
     #[test]
     fn it_parse_vec_of_usize() {
-        let bytes = "LOL KIK     LOL KIK".as_bytes();
-        type Parser = Table<3, StrSep<" ">, Natural<String>>;
+        struct Space{}
+        impl StaticStr for Space {
+            fn as_str() -> &'static str {
+                " "
+            }
+        }
+        let bytes = "LOL KIK --- LOL KIK".as_bytes();
+        type Parser = Table<3, StrSep<Space>, Natural<String>>;
         let res = Parser::parse(bytes).unwrap();
         println!("{res:?}",);
     }

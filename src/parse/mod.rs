@@ -17,6 +17,10 @@ pub trait Parse {
     fn end(self, context: Context) -> Result<Self::Out, Error>;
 }
 
+pub trait StaticStr {
+    fn as_str() -> &'static str;
+}
+
 #[derive(Debug, Display, PartialEq, Eq)]
 #[display(fmt = "{} {}", context, message)]
 pub struct Error {

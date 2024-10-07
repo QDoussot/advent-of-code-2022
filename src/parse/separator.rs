@@ -1,3 +1,5 @@
+use super::StaticStr;
+
 pub trait Separator {
     fn as_bytes() -> &'static [u8];
 }
@@ -35,10 +37,12 @@ impl Separator for SpaceSep {
 }
 
 #[derive(Debug)]
-pub struct StrSep<const S: &'static str> {}
+pub struct StrSep<S: StaticStr> {
+    s:std::marker::PhantomData<S>
+}
 
-impl<const S: &'static str> Separator for StrSep<S> {
+impl<S: StaticStr> Separator for StrSep<S> {
     fn as_bytes() -> &'static [u8] {
-        S.as_bytes()
+        S::as_str().as_bytes()
     }
 }

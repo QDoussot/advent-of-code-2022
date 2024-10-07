@@ -1,7 +1,5 @@
 #![allow(incomplete_features)]
 #![feature(adt_const_params)]
-#![feature(is_sorted)]
-#![feature(iter_repeat_n)]
 #![feature(iter_array_chunks)]
 
 use std::io::{self, BufRead, BufReader};
@@ -10,16 +8,16 @@ use structopt::StructOpt;
 mod day01;
 mod day02;
 mod day03;
-mod day04;
+// mod day04;
 
-mod day05;
+// mod day05;
 mod day06;
-mod day07;
-mod day08;
+// mod day07;
+// mod day08;
 
 mod day09;
 mod day10;
-mod day11;
+// mod day11;
 mod parse;
 mod problem;
 use problem::Error;
@@ -71,14 +69,14 @@ fn main() -> Result<(), Error> {
         1 => problem::solve::<day01::Inventories>(lines, opt.part),
         2 => problem::solve::<day02::Guide>(lines, opt.part),
         3 => problem::solve::<day03::RuckSacks>(lines, opt.part),
-        4 => problem::solve::<day04::AssignmentsPairs>(lines, opt.part),
-        5 => problem::solve::<day05::RearrangementProcedure>(lines, opt.part),
+        // 4 => problem::solve::<day04::AssignmentsPairs>(lines, opt.part),
+        // 5 => problem::solve::<day05::RearrangementProcedure>(lines, opt.part),
         6 => problem::solve::<day06::Signal>(lines, opt.part),
-        7 => problem::solve::<day07::FileSystem>(lines, opt.part),
-        8 => problem::solve::<day08::Forest>(lines, opt.part),
+        // 7 => problem::solve::<day07::FileSystem>(lines, opt.part),
+        // 8 => problem::solve::<day08::Forest>(lines, opt.part),
         9 => problem::solve::<day09::Movements>(lines, opt.part),
         10 => problem::solve::<day10::Program>(lines, opt.part),
-        11 => problem::solve::<day11::MonkeyBehaviors>(lines, opt.part),
+        // 11 => problem::solve::<day11::MonkeyBehaviors>(lines, opt.part),
 
         _ => Err(Error::NoCorrespondingSolver),
     };

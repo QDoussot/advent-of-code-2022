@@ -1,4 +1,4 @@
-use super::{Context, Error, Parse, ParseExt};
+use super::{Context, Error, Parse, ParseExt, StaticStr};
 
 #[derive(PartialEq, Eq)]
 enum PatternPart {
@@ -9,16 +9,18 @@ enum PatternPart {
 
 use PatternPart::*;
 
-pub struct Capture<const S: &'static str, const N: usize, T: Parse + Default> {
+pub struct Capture<S: StaticStr, const N: usize, T: Parse + Default> {
+    s: std::marker::PhantomData<S>,
     capture_pos: usize,
     previous_context: Context,
     accepted: Vec<u8>,
     res: Vec<T::Out>,
 }
 
-impl<const S: &'static str, const N: usize, T: Parse + Default> Default for Capture<S, N, T> {
+impl<S: StaticStr, const N: usize, T: Parse + Default> Default for Capture<S, N, T> {
     fn default() -> Self {
         Self {
+            s:Default::default(),
             capture_pos: Default::default(),
             previous_context: Default::default(),
             accepted: Default::default(),
@@ -27,10 +29,10 @@ impl<const S: &'static str, const N: usize, T: Parse + Default> Default for Capt
     }
 }
 
-impl<const S: &'static str, const N: usize, T: Parse + Default> Capture<S, N, T> {
+impl<S: StaticStr, const N: usize, T: Parse + Default> Capture<S, N, T> {
     fn pattern_part(&self) -> PatternPart {
-        if self.capture_pos < S.len() {
-            match S.as_bytes()[self.capture_pos] {
+        if self.capture_pos < S::as_str().len() {
+            match S::as_str().as_bytes()[self.capture_pos] {
                 b'%' => PlaceHolder,
                 _ => Const,
             }
@@ -40,13 +42,13 @@ impl<const S: &'static str, const N: usize, T: Parse + Default> Capture<S, N, T>
     }
 }
 
-impl<const S: &'static str, const N: usize, T: Parse + Default> Parse for Capture<S, N, T> {
+impl<S: StaticStr, const N: usize, T: Parse + Default> Parse for Capture<S, N, T> {
     type Out = [T::Out; N];
 
     fn read_byte(&mut self, byte: &u8, context: Context) -> Result<(), Error> {
         match self.pattern_part() {
             PatternPart::PlaceHolder => {
-                if self.capture_pos + 1 <= S.len() - 1 && S.as_bytes()[self.capture_pos + 1] == *byte {
+                if self.capture_pos + 1 <= S::as_str().len() - 1 && S::as_str().as_bytes()[self.capture_pos + 1] == *byte {
                     self.capture_pos += 2;
                     let item = T::parse_with_context(&self.accepted, self.previous_context)?;
                     self.res.push(item);
@@ -57,7 +59,7 @@ impl<const S: &'static str, const N: usize, T: Parse + Default> Parse for Captur
                 Ok(())
             }
             PatternPart::Const => {
-                let expected = S.as_bytes()[self.capture_pos];
+                let expected = S::as_str().as_bytes()[self.capture_pos];
                 if expected != *byte {
                     Err(Error::new(
                         format!("{:?}", *byte),
@@ -66,8 +68,8 @@ impl<const S: &'static str, const N: usize, T: Parse + Default> Parse for Captur
                     ))
                 } else {
                     self.capture_pos += 1;
-                    if self.capture_pos == S.len() {
-                    } else if S.as_bytes()[self.capture_pos] == b'%' {
+                    if self.capture_pos == S::as_str().len() {
+                    } else if S::as_str().as_bytes()[self.capture_pos] == b'%' {
                         self.previous_context = context;
                     }
                     Ok(())
@@ -80,7 +82,7 @@ impl<const S: &'static str, const N: usize, T: Parse + Default> Parse for Captur
     fn end(mut self, context: Context) -> Result<Self::Out, Error> {
         match self.pattern_part() {
             Const => Err(Error::new("", "Premature end of input", context.line)),
-            PlaceHolder if self.capture_pos == S.len() - 1 => {
+            PlaceHolder if self.capture_pos == S::as_str().len() - 1 => {
                 let item = T::parse_with_context(&self.accepted, self.previous_context)?;
                 self.res.push(item);
                 Ok(self.res)
@@ -102,17 +104,32 @@ mod tests {
 
     use super::*;
 
+    struct MoveFromTo {}
+    impl StaticStr for MoveFromTo {
+        fn as_str() -> &'static str {
+            "move % from % to %"
+        }
+    }
+
     #[test]
     fn it_parses_the_move_command() {
-        type Parser = Capture<"move % from % to %", 3, Natural<usize>>;
+
+        type Parser = Capture<MoveFromTo, 3, Natural<usize>>;
         let bytes = "move 32 from 101 to 202".as_bytes();
         let vec = Parser::parse(bytes).unwrap();
         assert_eq!(vec![32, 101, 202], vec);
     }
 
+    struct Percent {}
+    impl StaticStr for Percent {
+        fn as_str() -> &'static str {
+            "%"
+        }
+    }
+
     #[test]
     fn it_parses_single_usize() {
-        type Parser = Capture<"%", 1, Natural<usize>>;
+        type Parser = Capture<Percent, 1, Natural<usize>>;
         let bytes = "43".as_bytes();
         let vec = Parser::parse(bytes).unwrap();
         assert_eq!(vec![43], vec);
