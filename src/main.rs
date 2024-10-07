@@ -9,7 +9,7 @@ mod day01;
 mod day02;
 mod day03;
 mod day04;
- 
+
 // mod day05;
 mod day06;
 // mod day07;
@@ -46,7 +46,8 @@ struct Opt {
     example: bool,
 }
 
-fn main() -> Result<(), Error> {
+fn main_bis() -> Result<(), Error>
+{
     let opt = Opt::from_args();
 
     let file_name = match opt.input {
@@ -59,7 +60,10 @@ fn main() -> Result<(), Error> {
         }
         Some(file_name) => file_name,
     };
-    let file = std::fs::File::open(file_name).map_err(|e| Error::CantOpenInputFile(e.to_string()))?;
+
+    let file = std::fs::File::open(&file_name)
+        .map_err(|e| Error::CantOpenInputFile(file_name, e.to_string()))?;
+
     let lines = BufReader::new(file)
         .lines()
         .collect::<Result<Vec<_>, io::Error>>()
@@ -77,10 +81,19 @@ fn main() -> Result<(), Error> {
         9 => problem::solve::<day09::Movements>(lines, opt.part),
         10 => problem::solve::<day10::Program>(lines, opt.part),
         // 11 => problem::solve::<day11::MonkeyBehaviors>(lines, opt.part),
-
-        _ => Err(Error::NoCorrespondingSolver),
+        _ => Err(Error::NoCorrespondingSolver(opt.day)),
     };
     println!("{}", solution?);
 
+    Ok(())
+
+}
+
+fn main() -> Result<(), Error> {
+
+    if let Err(e) = main_bis() {
+        eprintln!("Error: {}",e);
+        std::process::exit(1);
+    }
     Ok(())
 }

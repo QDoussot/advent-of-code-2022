@@ -33,9 +33,13 @@ pub trait Problem: Sized {
 
 #[derive(Display, Debug)]
 pub enum Error {
-    CantOpenInputFile(String),
+    #[display(fmt="Failed opening file \"{}\" : \"{}\"",_0,_1)]
+    CantOpenInputFile(String,String),
+    #[display(fmt="Parsing failed: \"{}\"",_0)]
     ParsingFailed(ParsingError),
-    NoCorrespondingSolver,
+    #[display(fmt="No solver implemented for day {}",_0)]
+    NoCorrespondingSolver(usize),
+    #[display(fmt="Solver failed: \"{}\"",_0)]
     SolverFailed(SolvingError),
 }
 
