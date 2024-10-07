@@ -46,3 +46,8 @@ impl<S: StaticStr> Separator for StrSep<S> {
         S::as_str().as_bytes()
     }
 }
+
+
+DefStaticStr!(Dash, "-");
+DefStaticStr!(Comma, ",");
+

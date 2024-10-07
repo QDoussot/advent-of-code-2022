@@ -8,8 +8,8 @@ use structopt::StructOpt;
 mod day01;
 mod day02;
 mod day03;
-// mod day04;
-
+mod day04;
+ 
 // mod day05;
 mod day06;
 // mod day07;
@@ -69,7 +69,7 @@ fn main() -> Result<(), Error> {
         1 => problem::solve::<day01::Inventories>(lines, opt.part),
         2 => problem::solve::<day02::Guide>(lines, opt.part),
         3 => problem::solve::<day03::RuckSacks>(lines, opt.part),
-        // 4 => problem::solve::<day04::AssignmentsPairs>(lines, opt.part),
+        4 => problem::solve::<day04::AssignmentsPairs>(lines, opt.part),
         // 5 => problem::solve::<day05::RearrangementProcedure>(lines, opt.part),
         6 => problem::solve::<day06::Signal>(lines, opt.part),
         // 7 => problem::solve::<day07::FileSystem>(lines, opt.part),

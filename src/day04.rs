@@ -1,3 +1,5 @@
+use crate::parse::separator::Dash;
+use crate::parse::separator::Comma;
 use std::ops::RangeInclusive;
 
 use crate::{
@@ -14,8 +16,8 @@ use crate::{
 #[derive(Debug)]
 pub struct AssignmentsPairs(Vec<(RangeInclusive<usize>, RangeInclusive<usize>)>);
 
-type RangeParser = Couple<Natural<usize>, StrSep<"-">, Natural<usize>>;
-type Parser = Seq<Couple<RangeParser, StrSep<",">, RangeParser>, LineSep>;
+type RangeParser = Couple<Natural<usize>, StrSep<Dash>, Natural<usize>>;
+type Parser = Seq<Couple<RangeParser, StrSep<Comma>, RangeParser>, LineSep>;
 
 fn range_from_couple((start, end): (usize, usize)) -> RangeInclusive<usize> {
     RangeInclusive::new(start, end)
