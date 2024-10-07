@@ -1,7 +1,8 @@
+use crate::parse::StaticStr;
 use itertools::Itertools;
 use strum_macros::EnumString;
 
-use crate::{parse::Context, prelude::*};
+use crate::{parse::{separator::CommaSpace, Context, DefStaticStr}, prelude::*};
 
 #[derive(Debug, EnumString, Copy, Clone)]
 enum Operator {
@@ -138,10 +139,11 @@ impl Monkey {
 impl Monkey {
     fn parse_from_capture(captured: [(Vec<u8>, Context, Context); 6]) -> Result<Self, ParsingError> {
         let id = Natural::<usize>::parse_with_context(&captured[0].0, captured[0].1)?;
-        let items = Seq::<Natural<usize>, StrSep<", ">>::parse_with_context(&captured[1].0, captured[1].1)?;
+        let items = Seq::<Natural<usize>, StrSep<CommaSpace>>::parse_with_context(&captured[1].0, captured[1].1)?;
+        DefStaticStr!(Old,"old");
 
         // A bit of a hack here to check 'old' token
-        type OperandeParser = Either<Capture<"old", 0, Natural<usize>>, Natural<usize>>;
+        type OperandeParser = Either<Capture<Old, 0, Natural<usize>>, Natural<usize>>;
         type OperationParser = Couple<Natural<Operator>, SpaceSep, OperandeParser>;
         let operation = OperationParser::parse_with_context(&captured[2].0, captured[2].1)?;
         let operation = (operation.0, Operande::from(operation.1)).into();
@@ -167,16 +169,17 @@ impl Monkey {
 #[derive(Debug, Clone)]
 pub struct MonkeyBehaviors(Vec<Monkey>);
 
-const MONKEY_FMT: &'static str = "Monkey %:
+DefStaticStr!(MonkeyFmt, "Monkey %:
   Starting items: %
   Operation: new = old %
   Test: divisible by %
     If true: throw to monkey %
-    If false: throw to monkey %";
-
+    If false: throw to monkey %"
+    );
 impl Problem for MonkeyBehaviors {
     fn parse(lines: Vec<String>) -> Result<Self, ParsingError> {
-        type MonkeyParser = Capture<MONKEY_FMT, 6, crate::parse::keep::Keep>;
+        
+        type MonkeyParser = Capture<MonkeyFmt, 6, crate::parse::keep::Keep>;
         type NoteParser = Seq<MonkeyParser, EmptyLineSep>;
         let monkey_behaviors = NoteParser::parse(lines.join("\n").as_bytes())?;
         let monkey_behaviors = monkey_behaviors
