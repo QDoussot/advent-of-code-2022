@@ -50,4 +50,5 @@ impl<S: StaticStr> Separator for StrSep<S> {
 
 DefStaticStr!(Dash, "-");
 DefStaticStr!(Comma, ",");
+DefStaticStr!(Space, " ");
 

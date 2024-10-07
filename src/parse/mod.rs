@@ -32,6 +32,7 @@ macro_rules! DefStaticStr {
     }
 }
 
+pub(crate) use DefStaticStr;
 #[derive(Debug, Display, PartialEq, Eq)]
 #[display(fmt = "{} {}", context, message)]
 pub struct Error {

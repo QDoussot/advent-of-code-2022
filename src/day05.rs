@@ -2,9 +2,12 @@ use std::str::FromStr;
 
 use itertools::Itertools;
 
+use crate::parse::separator::Space;
 use crate::problem::SolvingError::ExpectationUnfulfilled;
+use crate::parse::StaticStr;
 use crate::{
     parse::{
+        DefStaticStr,
         capture::Capture,
         couple::Couple,
         natural::Natural,
@@ -74,11 +77,12 @@ pub struct RearrangementProcedure {
     stacks: Vec<Vec<char>>,
     moves: Vec<Move>,
 }
+DefStaticStr!(MoveFromTo, "move % from % to %");
 
 impl Problem for RearrangementProcedure {
     fn parse(lines: Vec<String>) -> Result<Self, ParsingError> {
-        type StackParser = Seq<Table<3, StrSep<" ">, Natural<StackSymbol>>, LineSep>;
-        type ProcedureParser = Seq<Capture<"move % from % to %", 3, Natural<usize>>, LineSep>;
+        type StackParser = Seq<Table<3, StrSep<Space>, Natural<StackSymbol>>, LineSep>;
+        type ProcedureParser = Seq<Capture<MoveFromTo, 3, Natural<usize>>, LineSep>;
         let res = Couple::<StackParser, EmptyLineSep, ProcedureParser>::parse(lines.join("\n").as_bytes())?;
         let mut stacks_rows = res.0;
 
