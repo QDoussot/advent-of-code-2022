@@ -21,6 +21,17 @@ pub trait StaticStr {
     fn as_str() -> &'static str;
 }
 
+macro_rules! DefStaticStr {
+    ($n:ident,$s:literal) => {
+        pub struct $n {}
+        impl StaticStr for $n {
+            fn as_str() -> &'static str {
+                $s
+            }
+        }
+    }
+}
+
 #[derive(Debug, Display, PartialEq, Eq)]
 #[display(fmt = "{} {}", context, message)]
 pub struct Error {
