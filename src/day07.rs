@@ -1,8 +1,10 @@
+use crate::parse::StaticStr;
 use std::str::FromStr;
 
 use crate::parse::couple::SplitFirst;
 use crate::parse::natural::Natural;
 use crate::parse::seq::{Skip, SkipFinal};
+use crate::parse::DefStaticStr;
 use crate::{
     parse::{
         couple::Couple,
@@ -206,11 +208,13 @@ impl FromStr for CommandAnswerItem {
     }
 }
 
+DefStaticStr!(CmdPrompt,"$ ");
+
 impl Problem for FileSystem {
     fn parse(lines: Vec<String>) -> Result<Self, ParsingError> {
         type CommandParser =
             Couple<Natural<Command>, LineSep, Seq<Natural<CommandAnswerItem>, LineSep, SkipFinal>, SplitFirst>;
-        let cmds = Seq::<CommandParser, StrSep<"$ ">, Skip>::parse(lines.join("\n").as_bytes())?;
+        let cmds = Seq::<CommandParser, StrSep<CmdPrompt>, Skip>::parse(lines.join("\n").as_bytes())?;
 
         let mut builder = FileSystemBuilder::new();
 
