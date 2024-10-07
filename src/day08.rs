@@ -1,7 +1,7 @@
 use crate::{
     parse::{
         natural::Natural,
-        separator::{LineSep, StrSep},
+        separator::{Empty, LineSep, StrSep},
         seq::Seq,
     },
     problem::{ParsingError, Problem, SolvingError},
@@ -160,7 +160,7 @@ enum Edge {
 use crate::parse::{table, ParseExt};
 impl Problem for Forest {
     fn parse(lines: Vec<String>) -> Result<Self, ParsingError> {
-        type Parser = Seq<table::Table<1, StrSep<"">, Natural<usize>>, LineSep>;
+        type Parser = Seq<table::Table<1, StrSep<Empty>, Natural<usize>>, LineSep>;
         let forest = Parser::parse(lines.join("\n").as_bytes())?;
 
         if forest.len() == 0 {

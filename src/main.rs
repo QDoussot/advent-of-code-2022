@@ -13,7 +13,7 @@ mod day04;
 mod day05;
 mod day06;
 mod day07;
-// mod day08;
+mod day08;
 
 mod day09;
 mod day10;
@@ -77,7 +77,7 @@ fn main_bis() -> Result<(), Error>
         5 => problem::solve::<day05::RearrangementProcedure>(lines, opt.part),
         6 => problem::solve::<day06::Signal>(lines, opt.part),
         7 => problem::solve::<day07::FileSystem>(lines, opt.part),
-        // 8 => problem::solve::<day08::Forest>(lines, opt.part),
+        8 => problem::solve::<day08::Forest>(lines, opt.part),
         9 => problem::solve::<day09::Movements>(lines, opt.part),
         10 => problem::solve::<day10::Program>(lines, opt.part),
         // 11 => problem::solve::<day11::MonkeyBehaviors>(lines, opt.part),
